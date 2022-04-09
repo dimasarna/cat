@@ -5,6 +5,7 @@ require_once("config.php");
 
 if (!isset($_GET["id"])) {
 	header("Location: index.php");
+	die();
 }
 
 if (isset($_POST["edit"])) {
@@ -37,8 +38,10 @@ if (isset($_POST["edit"])) {
 
 			$query = mysqli_query($db, $sql);
 
-			if ($query) header("Location: logout.php?msg=edit-success");
-			else die(mysqli_error($db));
+			if ($query) {
+			    header("Location: logout.php?msg=edit-success");
+			    die();
+			} else die(mysqli_error($db));
 
 		} else {
 			$msg_title = urlencode("Error!");
@@ -56,19 +59,17 @@ if (isset($_POST["edit"])) {
 	$query = mysqli_query($db, $sql);
 	$data = mysqli_fetch_assoc($query);
 
-	if (mysqli_num_rows($query) < 1) {
-		die(mysqli_error($db));
-	}
+	if (mysqli_num_rows($query) < 1) die(mysqli_error($db));
 }
 
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
-	<head>
-		<meta charset="utf-8">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Edit Akun - Insan Penjaga Al-Qur'an</title>
+		<title>Edit Akun</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 	</head>
 	<body>
@@ -81,13 +82,13 @@ if (isset($_POST["edit"])) {
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" href="#">Insan Penjaga Al-Qur'an</a>
+		      <a class="navbar-brand" href="#"><?=$brand_name?></a>
 		    </div>
 		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 		      <ul class="nav navbar-nav">
 		        <li><a href="index.php">Home</a></li>
 		        <?php if ($_SESSION["user_data"]["is_admin"] == 0) { ?>
-		        <li><a href='main.php'>Halaman Kuis</a></li>
+		        <li><a href='main.php'>Halaman Ujian</a></li>
 		        <li><a href='view-history.php'>Riwayat</a></li>
 		        <?php } ?>
 				<?php if ($_SESSION["user_data"]["is_admin"] == 1) { ?>
@@ -96,13 +97,14 @@ if (isset($_POST["edit"])) {
 		          <ul class="dropdown-menu">
 		            <li><a href="register.php">Register</a></li>
 		            <li><a href="view-user.php">Scoreboard</a></li>
+		            <li><a href="view-history-all.php">Riwayat</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Soal <span class="caret"></span></a>
 		          <ul class="dropdown-menu">
-		            <li><a href="add.php">Add</a></li>
-		            <li><a href="view.php">View</a></li>
+		            <li><a href="add-soal.php">Add</a></li>
+		            <li><a href="view-soal.php">View</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
@@ -120,11 +122,13 @@ if (isset($_POST["edit"])) {
 		<div class="container">
 			<div class="panel panel-default">
 			  <div class="panel-heading">
-			    <h3 class="panel-title">Form Registrasi</h3>
+			    <h3 class="panel-title">Form User</h3>
 			  </div>
 			  <div class="panel-body">
 			  	<form action="" method="post">
 			  		<div class="form-group">
+						<div class="alert alert-info" role="alert">Kosongkan field yang tidak diperlukan.</div>
+						<div class="alert alert-danger hide" id="notif-alert" role="alert"><span id='notif-text'></span><button type="button" class="close" onclick="dismissAlert()" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
 			  			<label for="name">Nama</label>
 			  			<input type="text" class="form-control" name="name" id="name" value="<?php echo $data['nama']; ?>">
 			  		</div>
@@ -133,21 +137,18 @@ if (isset($_POST["edit"])) {
 			  			<input type="text" class="form-control" name="username" id="username" value="<?php echo $data['username']; ?>">
 			  		</div>
 			  		<div class="form-group">
-			  			<label for="old_password">Password Lama (Untuk Verifikasi)</label>
+			  			<label for="old_password">Password Lama (Wajib Untuk Verifikasi)</label>
 			  			<input type="password" class="form-control" name="old_password" id="old_password">
-			  			<small id="notif-1"></small>
 			  		</div>
 			  		<div class="form-group">
 			  			<label for="new_password">Password Baru</label>
 			  			<input type="password" class="form-control" name="new_password" id="new_password" onchange="verif2();">
 			  		</div>
 			  		<div class="form-group">
-			  			<label for="verif_password">Verifikasi Password</label>
+			  			<label for="verif_password">Ulangi Password Baru</label>
 			  			<input type="password" class="form-control" name="verif_password" id="verif_password" onchange="verif2();">
-			  			<small id="notif-2"></small>
 			  		</div>
-			  		<div class="form-group"><small>*Kosongkan yang tidak perlu</small></div>
-					<input type="submit" class="btn btn-primary" name="edit" value="Edit" onclick="return check();">
+					<button type="submit" class="btn btn-primary" name="edit" onclick="return check();"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Edit</button>
 				</form>
 			  </div>
 			</div>
@@ -163,31 +164,42 @@ if (isset($_POST["edit"])) {
 
 		?>
 		<script>
-		function verif1() {
-			var element = document.getElementById('old_password');
-
-			if (element.value == "" || element.value == undefined) {
-				document.getElementById('notif-1').innerHTML = "Masukkan Password.";
-				return false;
-			} else true;
-		}
-
-		function verif2() {
-			var element_1 = document.getElementById('new_password');
-			var element_2 = document.getElementById('verif_password');
-
-			if (element_1.value != element_2.value) {
-				document.getElementById('notif-2').innerHTML = "Password tidak sama.";
-				return false;
-			} else {
-				document.getElementById('notif-2').innerHTML = "";
-				return true;
+			function dismissAlert() {
+				document.getElementById("notif-alert").classList.remove("show");
+				document.getElementById("notif-alert").classList.add("hide");
 			}
-		}
+			
+			function verif1() {
+				var element = document.getElementById('old_password');
 
-		function check() {
-			return verif1() && verif2();
-		}
+				if (element.value == "") {
+					document.getElementById("notif-text").innerHTML = "Masukkan Password.";
+					document.getElementById("notif-alert").classList.remove("hide");
+					document.getElementById("notif-alert").classList.add("show");
+					document.getElementById("notif-alert").scrollIntoView();
+					return false;
+				} else return true;
+			}
+
+			function verif2() {
+				var element_1 = document.getElementById('new_password');
+				var element_2 = document.getElementById('verif_password');
+
+				if (element_1.value != element_2.value) {
+					document.getElementById("notif-text").innerHTML = "Password tidak sama.";
+					document.getElementById("notif-alert").classList.remove("hide");
+					document.getElementById("notif-alert").classList.add("show");
+					document.getElementById("notif-alert").scrollIntoView();
+					return false;
+				} else {
+					dismissAlert();
+					return true;
+				}
+			}
+
+			function check() {
+				return verif1() && verif2();
+			}
 		</script>
 	</body>
 </html>

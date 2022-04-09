@@ -1,11 +1,14 @@
-<?php require_once("auth.php"); ?>
+<?php
+require_once("auth.php");
+require_once("config.php");
+?>
 
 <!DOCTYPE html>
 <html lang="id">
-	<head>
-		<meta charset="utf-8">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Halaman Utama - Insan Penjaga Al-Qur'an</title>
+		<title>Halaman Utama</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 	</head>
 	<body>
@@ -18,13 +21,13 @@
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" href="#">Insan Penjaga Al-Qur'an</a>
+		      <a class="navbar-brand" href="#"><?=$brand_name?></a>
 		    </div>
 		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 		      <ul class="nav navbar-nav">
 		        <li class="active"><a href="index.php">Home <span class="sr-only">(current)</span></a></li>
 		        <?php if ($_SESSION["user_data"]["is_admin"] == 0) { ?>
-		        <li><a href='main.php'>Halaman Kuis</a></li>
+		        <li><a href='main.php'>Halaman Ujian</a></li>
 		        <li><a href='view-history.php'>Riwayat</a></li>
 		        <?php } ?>
 				<?php if ($_SESSION["user_data"]["is_admin"] == 1) { ?>
@@ -33,13 +36,14 @@
 		          <ul class="dropdown-menu">
 		            <li><a href="register.php">Register</a></li>
 		            <li><a href="view-user.php">Scoreboard</a></li>
+		            <li><a href="view-history-all.php">Riwayat</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Soal <span class="caret"></span></a>
 		          <ul class="dropdown-menu">
-		            <li><a href="add.php">Add</a></li>
-		            <li><a href="view.php">View</a></li>
+		            <li><a href="add-soal.php">Add</a></li>
+		            <li><a href="view-soal.php">View</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
@@ -63,7 +67,7 @@
 				<br>
 				<?php } ?>
 				<br>
-				<a href="edit-user.php?id=<?php echo $_SESSION['user_data']['id']; ?>">Edit Akun</a> | <a href="logout.php">Logout</a>
+				<a class="btn btn-warning" href="edit-user.php?id=<?php echo $_SESSION['user_data']['id']; ?>" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit Akun</a> <a class="btn btn-danger" href="logout.php" role="button"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> Logout</a>
 			</div>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>

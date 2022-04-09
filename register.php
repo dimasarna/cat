@@ -5,6 +5,7 @@ require_once("config.php");
 
 if ($_SESSION["user_data"]["is_admin"] == 0) {
 	header("Location: index.php");
+	die();
 }
 
 if (isset($_POST["register"])) {
@@ -17,6 +18,7 @@ if (isset($_POST["register"])) {
 		$msg_icon = "error";
 		$msg = "msg_title=" . $msg_title . "&msg_text=" . $msg_text . "&msg_icon=" . $msg_icon;
 		header("Location: register.php?" . $msg);
+		die();
 	}
 	
 	$password = password_hash($_POST["password"], PASSWORD_DEFAULT);
@@ -31,6 +33,7 @@ if (isset($_POST["register"])) {
 		$msg_icon = "success";
 		$msg = "msg_title=" . $msg_title . "&msg_text=" . $msg_text . "&msg_icon=" . $msg_icon;
 		header("Location: view-user.php?" . $msg);
+		die();
 	} else die(mysqli_error($db));
 }
 
@@ -38,10 +41,10 @@ if (isset($_POST["register"])) {
 
 <!DOCTYPE html>
 <html lang="id">
-	<head>
-		<meta charset="utf-8">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Halaman Pendaftaran - Insan Penjaga Al-Qur'an</title>
+		<title>Halaman Pendaftaran</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 	</head>
 	<body>
@@ -54,7 +57,7 @@ if (isset($_POST["register"])) {
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" href="#">Insan Penjaga Al-Qur'an</a>
+		      <a class="navbar-brand" href="#"><?=$brand_name?></a>
 		    </div>
 		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 		      <ul class="nav navbar-nav">
@@ -69,13 +72,14 @@ if (isset($_POST["register"])) {
 		          <ul class="dropdown-menu">
 		            <li class="active"><a href="register.php">Register <span class="sr-only">(current)</span></a></li>
 		            <li><a href="view-user.php">Scoreboard</a></li>
+		            <li><a href="view-history-all.php">Riwayat</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Soal <span class="caret"></span></a>
 		          <ul class="dropdown-menu">
-		            <li><a href="add.php">Add</a></li>
-		            <li><a href="view.php">View</a></li>
+		            <li><a href="add-soal.php">Add</a></li>
+		            <li><a href="view-soal.php">View</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
@@ -110,10 +114,10 @@ if (isset($_POST["register"])) {
 			  			<input type="password" class="form-control" name="password" id="password">
 			  		</div>
 			  		<div class="form-group">
-			  			<label for="verif_password">Verifikasi Password</label>
+			  			<label for="verif_password">Ulangi Password</label>
 			  			<input type="password" class="form-control" name="verif_password" id="verif_password">
 			  		</div>
-					<input type="submit" class="btn btn-primary" name="register" value="Register">
+					<button type="submit" class="btn btn-primary" name="register"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Register</button>
 				</form>
 			  </div>
 			</div>

@@ -5,13 +5,14 @@ require_once("config.php");
 
 if ($_SESSION["user_data"]["is_admin"] == 0) {
 	header("Location: index.php");
+	die();
 }
 
 if (isset($_POST["tambah"])) {
 	$nama_ujian = filter_input(INPUT_POST, 'nama_ujian', FILTER_SANITIZE_STRING);
-	$kode_ujian = $_POST["kode_ujian"];
-	$token = $_POST["token"];
-	$total = $_POST["total"];
+	$kode_ujian = filter_input(INPUT_POST, 'kode_ujian', FILTER_SANITIZE_STRING);
+	$token = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING);
+	$total = filter_input(INPUT_POST, 'total', FILTER_SANITIZE_STRING);
 
 	$sql = "INSERT INTO ujian (kode_ujian, nama_ujian, token)
 			VALUES ('$kode_ujian', '$nama_ujian', '$token')";
@@ -62,19 +63,20 @@ if (isset($_POST["tambah"])) {
 	$msg_icon = "success";
 	$msg = "msg_title=" . $msg_title . "&msg_text=" . $msg_text . "&msg_icon=" . $msg_icon;
 	header("Location: view-ujian.php?" . $msg);
+	die();
 }
 
-$sql = "SELECT * FROM soal WHERE copy=1";
+$sql = "SELECT * FROM soal WHERE copy=1 ORDER BY id DESC";
 $query = mysqli_query($db, $sql);
 
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
-	<head>
-		<meta charset="utf-8">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Membuat Ujian - Insan Penjaga Al-Qur'an</title>
+		<title>Membuat Ujian</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 	</head>
 	<body>
@@ -87,7 +89,7 @@ $query = mysqli_query($db, $sql);
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" href="#">Insan Penjaga Al-Qur'an</a>
+		      <a class="navbar-brand" href="#"><?=$brand_name?></a>
 		    </div>
 		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 		      <ul class="nav navbar-nav">
@@ -102,13 +104,14 @@ $query = mysqli_query($db, $sql);
 		          <ul class="dropdown-menu">
 		            <li><a href="register.php">Register</a></li>
 		            <li><a href="view-user.php">Scoreboard</a></li>
+		            <li><a href="view-history-all.php">Riwayat</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Soal <span class="caret"></span></a>
 		          <ul class="dropdown-menu">
-		            <li><a href="add.php">Add</a></li>
-		            <li><a href="view.php">View</a></li>
+		            <li><a href="add-soal.php">Add</a></li>
+		            <li><a href="view-soal.php">View</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
@@ -131,6 +134,7 @@ $query = mysqli_query($db, $sql);
 			  <div class="panel-body">
 			  	<form action="" method="post">
 			  		<div class="form-group">
+						<div class="alert alert-danger hide" id="notif-alert" role="alert"><span id='notif-text'></span><button type="button" class="close" onclick="dismissAlert()" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
 			  			<label for="nama_ujian">Nama Ujian</label>
 			  			<input type="text" class="form-control" name="nama_ujian" id="nama_ujian">
 			  		</div>
@@ -158,7 +162,7 @@ $query = mysqli_query($db, $sql);
 					echo "<div class='form-group'><input type='hidden' name='total' value='" . $i . "'></div>";
 
 					?>
-					<input type="submit" class="btn btn-primary" name="tambah" onclick="return validation();" value="Tambah">
+					<button type="submit" class="btn btn-primary" name="tambah" onclick="return validation();"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Tambah</button>
 				</form>
 			  </div>
 			</div>
@@ -166,27 +170,35 @@ $query = mysqli_query($db, $sql);
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>
 		<script>
-		function generate_token(length) {
-			var result = '';
-			var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-			var characters_length = characters.length;
-
-			for (var i = 0; i < length; ++i) {
-				result += characters.charAt(Math.floor(Math.random()*characters_length));
+			function dismissAlert() {
+				document.getElementById("notif-alert").classList.remove("show");
+				document.getElementById("notif-alert").classList.add("hide");
 			}
+			
+			function generate_token(length) {
+				var result = "";
+				var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+				var characters_length = characters.length;
 
-			document.getElementById('token').value = result.toUpperCase();
-			return false;
-		}
+				for (var i = 0; i < length; ++i) {
+					result += characters.charAt(Math.floor(Math.random()*characters_length));
+				}
 
-		function validation() {
-			var total = document.querySelectorAll('input[type="checkbox"]:checked').length;
-			if (total > 0) return true;
-			else {
-				document.getElementById('notif').innerHTML = "&nbsp;Pilih minimal 1 soal.";
+				document.getElementById("token").value = result.toUpperCase();
 				return false;
 			}
-		}
+
+			function validation() {
+				var total = document.querySelectorAll('input[type="checkbox"]:checked').length;
+				if (total > 0) return true;
+				else {
+					document.getElementById("notif-text").innerHTML = "&nbsp;Pilih minimal 1 soal.";
+					document.getElementById("notif-alert").classList.remove("hide");
+					document.getElementById("notif-alert").classList.add("show");
+					document.getElementById("notif-alert").scrollIntoView();
+					return false;
+				}
+			}
 		</script>
 	</body>
 </html>

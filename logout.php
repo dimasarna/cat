@@ -10,12 +10,14 @@ if (isset($_GET["msg"]) && $_GET["msg"] == "edit-success") {
 	$msg_icon = "success";
 	$msg = "msg_title=" . $msg_title . "&msg_text=" . $msg_text . "&msg_icon=" . $msg_icon;
 	header("Location: login.php?" . $msg);
+	die();
 } else {
 	$msg_title = urlencode("Berhasil!");
-	$msg_text = urlencode("Logout berhasil!");
+	$msg_text = urlencode("Logout berhasil.");
 	$msg_icon = "success";
 	$msg = "msg_title=" . $msg_title . "&msg_text=" . $msg_text . "&msg_icon=" . $msg_icon;
 	header("Location: login.php?" . $msg);
+	die();
 }
 
 ?>

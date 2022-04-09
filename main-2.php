@@ -14,41 +14,20 @@ if (!isset($_SESSION["user_data"]["sedang_kuis"])) {
 if (isset($_GET["n"])) {
 	$n = $_GET["n"];
 
-	if ($_SESSION["soal"][$n-1]["sudah_dilihat"] && $_SESSION["soal"][$n-1]["sudah_dikerjakan"]) {
-		if ($n == $_SESSION["jumlah_soal"]) {
-			header("Location: main-2.php?n=1");
-		} else {
-			$n = $n + 1;
-			header("Location: main-2.php?n=" . $n);
-		}
-	} else if ($_SESSION["soal"][$n-1]["sudah_dilihat"] && !$_SESSION["soal"][$n-1]["sudah_dikerjakan"]) {
-		if (isset($_GET['ans'])) {
-			$_SESSION["soal"][$n-1]["jawaban_user"] = $_GET['ans'];
-			$_SESSION["soal"][$n-1]["sudah_dikerjakan"] = 1;
-			$_SESSION["jumlah_dikerjakan"] += 1;
+    if ($n > $_SESSION["jumlah_soal"]) {
+	    header("Location: result.php");
+	    die();
+    }
+    
+	if (isset($_GET['ans'])) {
+	    $_SESSION["soal"][$n-1]["jawaban_user"] = $_GET['ans'];
 
-			if ($n == $_SESSION["jumlah_soal"]) {
-				header("Location: main-2.php?n=1");
-			} else {
-				$n = $n + 1;
-				header("Location: main-2.php?n=" . $n);
-			}
-		} else {
-			$_SESSION["soal"][$n-1]["jawaban_user"] = 'x';
-			$_SESSION["soal"][$n-1]["sudah_dikerjakan"] = 1;
-			$_SESSION["jumlah_dikerjakan"] += 1;
-
-			if ($n == $_SESSION["jumlah_soal"]) {
-				header("Location: main-2.php?n=1");
-			} else {
-				$n = $n + 1;
-				header("Location: main-2.php?n=" . $n);
-			}
-		}
+		$n = $n + 1;
+		header("Location: main-2.php?n=" . $n);
+		die();
 	}
-	else if (!$_SESSION["soal"][$n-1]["sudah_dilihat"]) {
-		$_SESSION["soal"][$n-1]["sudah_dilihat"] = 1;
-	}
+	
+	//if there is nothing to process
 
 	if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] === "on") {
 		$newUrl = "https";
@@ -58,33 +37,34 @@ if (isset($_GET["n"])) {
 	$newUrl .= $_SERVER["HTTP_HOST"];
 	$newUrl .= $_SERVER["PHP_SELF"];
 	$newUrl .= "?n=";
-	$newUrl .= $n;
+	$newUrl .= ($n+1);
 } else {
 	header("Location: main-2.php?n=1");
-}
-
-if ($_SESSION["jumlah_dikerjakan"] == $_SESSION["jumlah_soal"]) {
-	header("Location: result.php");
+	die();
 }
 
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
-	<head>
-		<meta charset="utf-8">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Kuis - Insan Penjaga Al-Qur'an</title>
+		<title>Ujian</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<script type="text/javascript">
+	        window.history.forward();
+	        function noBack() { window.history.forward(); }
+        </script>
 	</head>
-	<body>
+	<body onload="noBack();" onpageshow="if (event.persisted) noBack();" onunload="">
 		<div class="container" style="margin-top: 15px">
 			<div class="row">
 				<div class="col-xs-12">
 					<?php 
 
-					$template = "<div class='well text-center'>%d. %s</div>";
-					printf($template, $n, $_SESSION["soal"][$n-1]["pertanyaan"]);
+					$template = "<div class='well lead text-center'>%d dari %d<br>%s</div>";
+					printf($template, $n, $_SESSION["jumlah_soal"], $_SESSION["soal"][$n-1]["pertanyaan"]);
 
 					?>
 				</div>
@@ -93,7 +73,7 @@ if ($_SESSION["jumlah_dikerjakan"] == $_SESSION["jumlah_soal"]) {
 				<a class="col-xs-6" href="main-2.php?n=<?php echo $n; ?>&#38;ans=a">
 					<?php
 
-					$template = "<div class='bg-danger text-center' style='padding: 14px'>A. %s</div>";
+					$template = "<div class='bg-success lead text-center' style='padding: 14px'>A. %s</div>";
 					printf($template, $_SESSION["soal"][$n-1]["pilihan_1"]);
 
 					?>
@@ -101,19 +81,19 @@ if ($_SESSION["jumlah_dikerjakan"] == $_SESSION["jumlah_soal"]) {
 				<a id="col1" class="col-xs-6" href="main-2.php?n=<?php echo $n; ?>&#38;ans=b">
 					<?php
 
-					$template = "<div class='bg-danger text-center' style='padding: 14px'>B. %s</div>";
+					$template = "<div class='bg-success lead text-center' style='padding: 14px'>B. %s</div>";
 					printf($template, $_SESSION["soal"][$n-1]["pilihan_2"]);
 
 					?>
 				</a>
 			</div>
 			<br>
+			<?php if (($_SESSION["soal"][$n-1]["pilihan_3"] != "") && ($_SESSION["soal"][$n-1]["pilihan_4"] != "")) { ?>
 			<div class="row">
 				<a class="col-xs-6" href="main-2.php?n=<?php echo $n; ?>&#38;ans=c">
 					<?php
 
-					echo "<div class='bg-danger text-center' style='padding: 14px;'>";
-					$template = "C. %s</div>";
+					$template = "<div class='bg-success lead text-center' style='padding: 14px;'>C. %s</div>";
 					printf($template, $_SESSION["soal"][$n-1]["pilihan_3"]);
 
 					?>
@@ -121,12 +101,13 @@ if ($_SESSION["jumlah_dikerjakan"] == $_SESSION["jumlah_soal"]) {
 				<a class="col-xs-6" href="main-2.php?n=<?php echo $n; ?>&#38;ans=d">
 					<?php
 
-					$template = "<div class='bg-danger text-center' style='padding: 14px'>D. %s</div>";
+					$template = "<div class='bg-success lead text-center' style='padding: 14px'>D. %s</div>";
 					printf($template, $_SESSION["soal"][$n-1]["pilihan_4"]);
 
 					?>
 				</a>
 			</div>
+		<?php } ?>
 		</div>
 		<br>
 		<div class="container">

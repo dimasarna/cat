@@ -17,17 +17,20 @@ if (isset($_POST["login"])) {
 		$msg_icon = "error";
 		$msg = "msg_title=" . $msg_title . "&msg_text=" . $msg_text . "&msg_icon=" . $msg_icon;
 		header("Location: login.php?" . $msg);
+		die();
 	} else {
 		if (password_verify($password, $data["password"])) {
 			session_start();
 			$_SESSION["user_data"] = $data;
 			header("Location: index.php");
+			die();
 		} else {
 			$msg_title = urlencode("Error!");
 			$msg_text = urlencode("Password salah!");
 			$msg_icon = "error";
 			$msg = "msg_title=" . $msg_title . "&msg_text=" . $msg_text . "&msg_icon=" . $msg_icon;
 			header("Location: login.php?" . $msg);
+			die();
 		}
 	}
 }
@@ -36,14 +39,15 @@ if (isset($_POST["login"])) {
 
 <!DOCTYPE html>
 <html lang="id">
-	<head>
-		<meta charset="utf-8">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Halaman Login - Insan Penjaga Al-Qur'an</title>
+		<title>Halaman Login</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 	</head>
 	<body>
-		<div class="container" style="margin-top: 30px">
+		<div class="container" style="margin-top: 30px;">
+		    <!--<img src="uploads/logo.jpeg" class="img-responsive center-block" style="margin-bottom: 30px;" alt="Logo">-->
 			<form action="" method="post">
 				<div class="panel panel-default">
 					<div class="panel-heading">
@@ -62,9 +66,9 @@ if (isset($_POST["login"])) {
 						  <input type="password" class="form-control" placeholder="Password" aria-describedby="basic-addon1" name="password" id="password">
 						</div>
 						<br>
-						<input type="submit" class="btn btn-primary" name="login" value="Login">
+						<button type="submit" class="btn btn-primary" name="login"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span> Login</button>
 					</div>
-					<div class="panel-footer text-center">Insan Penjaga Al-Qur'an &copy; 2019</div>
+					<div class="panel-footer text-center">&copy; <?=date('Y');?> <a href="https://<?=$brand_name?>.com"><?=$brand_name?>.com</a></div>
 				</div>
 			</form>
 		</div>

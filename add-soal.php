@@ -5,6 +5,7 @@ require_once("config.php");
 
 if ($_SESSION["user_data"]["is_admin"] == 0) {
 	header("Location: index.php");
+	die();
 }
 
 if (isset($_POST["tambah"])) {
@@ -24,7 +25,7 @@ if (isset($_POST["tambah"])) {
 		$msg_text = urlencode("Input soal berhasil!");
 		$msg_icon = "success";
 		$msg = "msg_title=" . $msg_title . "&msg_text=" . $msg_text . "&msg_icon=" . $msg_icon;
-		header("Location: view.php?" . $msg);
+		header("Location: view-soal.php?" . $msg);
 	} else die(mysqli_error($db));
 }
 
@@ -32,10 +33,10 @@ if (isset($_POST["tambah"])) {
 
 <!DOCTYPE html>
 <html lang="id">
-	<head>
-		<meta charset="utf-8">
+	<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Input Soal - Insan Penjaga Al-Qur'an</title>
+		<title>Input Soal</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 	</head>
 	<body>
@@ -48,7 +49,7 @@ if (isset($_POST["tambah"])) {
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" href="#">Insan Penjaga Al-Qur'an</a>
+		      <a class="navbar-brand" href="#"><?=$brand_name?></a>
 		    </div>
 		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 		      <ul class="nav navbar-nav">
@@ -63,13 +64,14 @@ if (isset($_POST["tambah"])) {
 		          <ul class="dropdown-menu">
 		            <li><a href="register.php">Register</a></li>
 		            <li><a href="view-user.php">Scoreboard</a></li>
+		            <li><a href="view-history-all.php">Riwayat</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Soal <span class="caret"></span></a>
 		          <ul class="dropdown-menu">
-		            <li class="active"><a href="add.php">Add <span class="sr-only">(current)</span></a></li>
-		            <li><a href="view.php">View</a></li>
+		            <li class="active"><a href="add-soal.php">Add <span class="sr-only">(current)</span></a></li>
+		            <li><a href="view-soal.php">View</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
@@ -92,6 +94,7 @@ if (isset($_POST["tambah"])) {
 			  <div class="panel-body">
 			  	<form action="" method="post">
 			  		<div class="form-group">
+						<div class="alert alert-danger hide" id="notif-alert" role="alert"><span id='notif-text'></span><button type="button" class="close" onclick="dismissAlert()" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
 			  			<label for="pertanyaan">Pertanyaan</label>
 			  			<input type="text" class="form-control" name="pertanyaan" id="pertanyaan">
 			  		</div>
@@ -115,12 +118,52 @@ if (isset($_POST["tambah"])) {
 			  			<label for="kunci_jawaban">Kunci Jawaban</label>
 			  			<input type="text" class="form-control" name="kunci_jawaban" id="kunci_jawaban" placeholder="e.g., a, b, c, d" maxlength="1">
 			  		</div>
-					<input type="submit" class="btn btn-primary" name="tambah" value="Tambah">
+					<button type="submit" class="btn btn-primary" name="tambah" onclick="return validate();"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Tambah</button>
 				</form>
 			  </div>
 			</div>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>
+		<script>
+			function dismissAlert() {
+				document.getElementById("notif-alert").classList.remove("show");
+				document.getElementById("notif-alert").classList.add("hide");
+			}
+			
+			function validate() {
+				var element1 = document.getElementById('pilihan_1');
+				var element2 = document.getElementById('pilihan_2');
+				var element3 = document.getElementById('pilihan_3');
+				var element4 = document.getElementById('pilihan_4');
+				var checklist1;
+				var checklist2;
+
+				if (element1.value != "" && element2.value != "") checklist1 = true;
+				else if (element1.value == "" && element2.value == "") checklist1 = true;
+				else checklist1 = false;
+				
+				if (element3.value != "" && element4.value != "") checklist2 = true;
+				else if (element3.value == "" && element4.value == "") checklist2 = true;
+				else checklist2 = false;
+				
+				if (checklist1 && checklist2) return true;
+				else {
+					if (!checklist1) {
+						document.getElementById("notif-text").innerHTML = "*Pilihan a dan b dapat dikosongkan atau diisi keduanya.";
+						document.getElementById("notif-alert").classList.remove("hide");
+						document.getElementById("notif-alert").classList.add("show");
+						document.getElementById("notif-alert").scrollIntoView();
+					}
+					else if (!checklist2) {
+						document.getElementById("notif-text").innerHTML = "*Pilihan c dan d dapat dikosongkan atau diisi keduanya.";
+						document.getElementById("notif-alert").classList.remove("hide");
+						document.getElementById("notif-alert").classList.add("show");
+						document.getElementById("notif-alert").scrollIntoView();
+					} else dismissAlert();
+					return false;
+				}
+			}
+		</script>
 	</body>
 </html>
